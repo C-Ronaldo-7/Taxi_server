@@ -1,46 +1,6 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 
-# @File    :   test.py
-# @Time    :   2019/06/27 15:47:40
-# @Author  :   Glory Huang
-# @Contact :   gloryhry@stu.xjtu.edu.cn
-
-# here put the import lib
-# import json
-
-# order_data = {
-#     "car_id": 0,
-#     "person_id": "0000",
-#     "is_start_nav": False,
-#     "is_arrive_start": False,
-#     "is_in_vehicle": False,
-#     "is_reach_target": False,
-#     "start_position": [0, 0],
-#     "target_position": [1, 1]
-# }
-
-# get_data = {
-#     "car_id": 1,
-#     "person_id": "0001",
-#     "is_start_nav": True,
-#     "is_arrive_start": False,
-#     "is_in_vehicle": True,
-#     "is_reach_target": False,
-#     "start_position": [0, 1],
-#     "target_position": [2, 1]
-# }
-# s=json.dumps(order_data)
-# a=json.loads(s)
-# print(get_data)
-# for b in a.keys():
-#     get_data[b]=order_data[b]
-# print(get_data)
-
-#####################################
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-
 # +-----------------------------------------+
 # | @File    :   test.py                    |
 # | @Time    :   2019/06/28 08:58:49        |
@@ -105,13 +65,18 @@ def write_sql(db, tabel, data):
 
 
 # 根据某一主值，跟新table中其他变量
-def update_sql(db,id,id_value,table,data):
-    # 使用cursor()方法获取操作游标 
+def update_sql(db, id, id_value, table, data):
+    # 使用cursor()方法获取操作游标
     cursor = db.cursor()
     for items in data.keys():
-        if items!= id:
-            update_items="{item}={item_value}".format(item=items,item_value=data[items])
-            sql = """UPDATE `{table}` SET {update_items} WHERE {id} = {id_value}""".format(table=table,update_items=update_items,id=id,id_value=id_value)
+        if items != id:
+            update_items = "{item}={item_value}".format(item=items,
+                                                        item_value=data[items])
+            sql = """UPDATE `{table}` SET {update_items} WHERE {id} = {id_value}""".format(
+                table=table,
+                update_items=update_items,
+                id=id,
+                id_value=id_value)
             try:
                 # 执行sql语句
                 cursor.execute(sql)
@@ -122,6 +87,7 @@ def update_sql(db,id,id_value,table,data):
                 db.rollback()
                 return False
     return True
+
 
 # 使用预处理语句创建表
 # routine不知道有多长暂定50字节长度
@@ -199,6 +165,5 @@ if __name__ == "__main__":
     #   "target_position_y": 1.9
     # }
     # update_sql(db,"person_id",1,"CLIENT",client_data)
-
 
     db.close()
