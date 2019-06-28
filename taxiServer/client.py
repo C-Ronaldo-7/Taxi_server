@@ -47,7 +47,7 @@ def receive_from_server(sockLocal):
     data_get = data_rev[0]
     # print(type(data_get))
     # print(data_get)
-    data = json.loads(data_get)  # 转换为json格式
+    data = json.loads(data_get)  # 转换为dict格式
     return data
 
 # 循环从服务器上接收数据，断线重连
