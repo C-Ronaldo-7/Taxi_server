@@ -139,7 +139,7 @@ def read_sql(db, id, id_value, table):
 # 使用预处理语句创建表
 # routine不知道有多长暂定50字节长度
 car_sql = """CREATE TABLE `CAR` (
-    `car_id` INT NOT NULL AUTO_INCREMENT,
+    `car_id` INT NOT NULL,
     `current_position_x`  FLOAT, 
     `current_position_y`  FLOAT, 
     `routine`  VARCHAR(50),
@@ -168,7 +168,7 @@ client_sql = """CREATE TABLE `CLIENT` (
 
 # 订单表
 order_sql = """CREATE TABLE `ORDER` (
-    `car_id` INT NOT NULL AUTO_INCREMENT,
+    `car_id` INT NOT NULL,
     `person_id`  VARCHAR(32),
     `is_start_nav`  BOOL,
     `is_arrive_start`  BOOL,
