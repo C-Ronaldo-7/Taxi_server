@@ -9,6 +9,8 @@
 
 # here put the import lib
 import requests
+import time
+from requests import exceptions 
 
 client_data={
   "person_id":1,
@@ -39,3 +41,18 @@ r = requests.post("http://127.0.0.1:5000/ROS", data=car_data)
 print("ROS respons:",r.text)
 r= requests.post("http://127.0.0.1:5000/client",data=client_data)
 print("client respons:",r.text)
+
+while True:
+    try:
+        r = requests.post("http://127.0.0.1:5000/ROS", data=car_data,timeout=0.1)
+    except exceptions.Timeout as e:
+        print(str(e))
+    else:
+        print("ROS respons:",r.text)
+    try:    
+        r= requests.post("http://127.0.0.1:5000/client",data=client_data,timeout=0.1)
+    except exceptions.Timeout as e:
+        print(str(e))    
+    else:
+        print("client respons:",r.text)
+    time.sleep(1)
