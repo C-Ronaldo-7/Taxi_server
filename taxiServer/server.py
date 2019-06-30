@@ -12,6 +12,7 @@ import json
 import time
 import threading
 from multiprocessing import Lock
+import database # 数据库API
 
 # 有关数据交换的相关变量
 # 订单表
@@ -130,8 +131,8 @@ class get_client_data_server(SocketServer.BaseRequestHandler):
             client_data[item] = get_data[item]
         #互斥锁释放
         client_lock.release()
-        # TODO: 跟新client_data数据库信息
-
+        # 跟新client_data数据库信息
+        database.update_sql(db,"person_id",client_data["person_id"],"CLIENT",client_data)
         # 系统安排车辆
         # TODO: 从car数据库中找到空闲的车辆。给订单分配车辆
 
@@ -144,7 +145,8 @@ class get_client_data_server(SocketServer.BaseRequestHandler):
                 order_data[item] = get_data[item]
         #互斥锁释放
         order_lock.release()
-        # TODO: 跟新order数据库信息
+        # 跟新order数据库信息
+        database.update_sql(db,"car_id",order_data["car_id"],"ORDER",order_data)
 
         while True:
             get_data = get_msg(self)  #从客户端获取client_data
@@ -155,8 +157,8 @@ class get_client_data_server(SocketServer.BaseRequestHandler):
                 client_data[item] = get_data[item]
             #互斥锁释放
             client_lock.release()
-            # TODO: 跟新client_data数据库信息
-
+            # 跟新client_data数据库信息
+            database.update_sql(db,"person_id",client_data["person_id"],"CLIENT",client_data)
             #更新order_data表单
             #互斥锁
             order_lock.acquire()
@@ -165,8 +167,8 @@ class get_client_data_server(SocketServer.BaseRequestHandler):
                     order_data[item] = get_data[item]
             #互斥锁释放
             order_lock.release()
-            # TODO: 跟新order数据库信息
-
+            # 跟新order数据库信息
+            database.update_sql(db,"car_id",order_data["car_id"],"ORDER",order_data)
             print(client_data)
 
 
@@ -188,7 +190,8 @@ def send_client(HOST, PORT):
 if __name__ == '__main__':  #并非一定要用这样的方式，只是建议这样使用
     HOST = ''  #定义侦听本地地址口（多个IP地址情况下），这里表示侦听所有
     PORT = 50008  #Server端开放的服务端口
-
+    # 连接数据库
+    db = database.connect_mysql("localhost", "glory", "0013", "taxi")
     # 由于s.server_forever()会循环执行，所以放入单独一个线程进行循环
     # 服务器接受数据端口 50009
     get = threading.Thread(target=get_client, args=(HOST, 50009))

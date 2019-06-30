@@ -51,10 +51,13 @@ def receive_from_server(sockLocal):
     return data
 
 # 循环从服务器上接收数据，断线重连
-def get_data_client():
+def get_data_client(uuid):
     host, port = "47.96.114.206", 50008
     print(host, port)
     sockLocal = doConnect(host, port)
+    # 发送自身类别和uuid
+    uuid=uuid.encode()
+    sockLocal.sendall(uuid) 
 
     while True:
         try:
@@ -97,6 +100,8 @@ def send_data_client():
 
 
 if __name__ == "__main__":
+    # 先计算客户端的uuid
+    uuid = "s"
     get = threading.Thread(target=get_data_client)
     send = threading.Thread(target=send_data_client)
     get.start()
