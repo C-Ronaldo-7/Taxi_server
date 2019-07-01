@@ -11,6 +11,7 @@
 from flask import Flask, request
 import ast
 import json
+import database
 
 app = Flask(__name__)
 
@@ -102,33 +103,79 @@ class car_data():
         result = ast.literal_eval(json_data)
         return json.dumps(result)
 
+class client_login_data():
+    account=""
+    password=""
+    login_or_create=True
+    def __init__(self, json):
+        self.account=json["account"]
+        self.password=json["password"]
+        if json["login_or_create"]=="True":
+            self.login_or_create=True
+        else:
+            self.login_or_create=False
+    def data2dist(self):
+        dist_data={}
+        dist_data["account"]=self.account
+        dist_data["password"]=self.password
+        dist_data["login_or_create"]=self.login_or_create
+        return dist_data
+
 
 @app.route('/')
 def hello_world():
-    return 'hello world'
-
+    car1=car_data({"car_id": 1, "current_position_x": 0, "current_position_y": 5, "routine": "[[0,0],[1,2]]", "velocity": 1.2, "gas": 0.2, "pressure_left_front": 0.2, "pressure_left_behind": 1.9, "pressure_right_front": 1.9, "pressure_right_behind": 4.6, "camera_status": False, "lidar_status": False, "ibeo_status": False})
+    return car1.car_data2json()
 
 @app.route('/client', methods=['POST'])
 def client_post():
     client = client_data(request.form)
-    # print(request.headers)
-    # # print(request.stream.read()) # 不要用，否则下面的form取不到数据
-    # print(request.form)
     print(client.person_id)
     # TODO: 得到客户端需要返回的数据
     return client.client_data2json()  # 先返回输入值
+
+@app.route('/client/login',methods=['POST'])
+def client_login():
+    client=client_login_data(request.form) # 获取客户端post的数据
+    if client.login_or_create==True:
+        dict_account=database.read_sql(db,"account",client.account,"ACCOUNT")
+        # 查询数据库中有无此账号
+        if dict_account==None:
+            return "无此账户"
+        # 检查数据库中账号密码是否正确    
+        if dict_account["password"]==client.password: 
+            return "Login in success"
+        else:
+            return "账号或密码不正确"
+    elif client.login_or_create==False:
+        # 检查数据库中是否有账户
+        print(client.account)
+        dict_account=database.read_sql(db,"account",client.account,"ACCOUNT")
+        if dict_account != None:
+            return "已存在此账号，请登录"
+        else:
+            print(client.data2dist())
+            print(dict_account)
+            a=database.write_sql(db,"ACCOUNT",client.data2dist()) # 写client进入数据库
+            if a == True:
+                return "Create account success"
+            else:
+                return "error occures"
+    else:
+        print(client.login_or_create+"?")
+        return "Error occurs"
+
 
 
 @app.route('/ROS', methods=['POST'])
 def ROS_post():
     car = car_data(request.form)
-    # print(request.headers)
-    # # print(request.stream.read()) # 不要用，否则下面的form取不到数据
-    # print(request.form)
     print(car.car_id)
     # TODO: 得到客户端需要返回的数据
     return car.car_data2json()
 
 
 if __name__ == '__main__':
+    db = database.connect_mysql("localhost", "glory", "0013", "taxi")
     app.run(port=5000, debug=True)
+    

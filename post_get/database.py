@@ -170,6 +170,7 @@ client_sql = """CREATE TABLE `CLIENT` (
 account_sql="""CREATE TABLE `ACCOUNT`(
     `account` VARCHAR(11) NOT NULL,
     `password` VARCHAR(128),
+    `login_or_create` BOOL,
     primary key(account))"""
 
 # 订单表
@@ -193,7 +194,7 @@ if __name__ == "__main__":
     # build_mysql(db, "ORDER", order_sql)
     # build_mysql(db, "CAR", car_sql)
     # build_mysql(db, "CLIENT", client_sql)
-    build_mysql(db,"ACCOUNT",account_sql)
+    # build_mysql(db,"ACCOUNT",account_sql)
 
     # client_data={
     #   "person_id":1,
@@ -221,8 +222,9 @@ if __name__ == "__main__":
     # 跟新某主值为...的数据
     # update_sql(db,"person_id",1,"CLIENT",client_data)
 
-    # 根据主值读取数据库中一行数据
-    # json=read_sql(db,"person_id",1,"CLIENT")
+    # # 根据主值读取数据库中一行数据
+    # account="17691053351"
+    # json=read_sql(db,"account",account,"ACCOUNT")
     # print(json)
 
     db.close()

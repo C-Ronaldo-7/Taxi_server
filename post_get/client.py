@@ -2,7 +2,7 @@
 
 # +-----------------------------------------+
 # | @File    :   client.py                |
-# | @Time    :   2019/06/30 21:54:50        |
+# | @Time    :   2019/07/01 15:04:36        |
 # | @Author  :   Glory Huang                |
 # | @Contact :   gloryhry@stu.xjtu.edu.cn   |
 # +-----------------------------------------+
@@ -10,7 +10,9 @@
 # here put the import lib
 import requests
 import time
-from requests import exceptions 
+from requests import exceptions
+import hashlib
+from requests.adapters import HTTPAdapter
 
 client_data={
   "person_id":1,
@@ -22,46 +24,51 @@ client_data={
   "target_position_x": 1.9,
   "target_position_y": 1.9
 }
-car_data = {
-    "car_id": 1,
-    "current_position_x": 0,
-    "current_position_y": 5,
-    "routine": [[0, 1], [2, 6], [1, 5]],
-    "velocity": 1.2,
-    "gas": 0.2,
-    "pressure_left_front": 0.2,
-    "pressure_left_behind": 1.9,
-    "pressure_right_front": 1.9,
-    "pressure_right_behind": 4.6,
-    "camera_status": False,
-    "lidar_status": False,
-    "ibeo_status": False
-}
-r = requests.post("http://47.96.114.206:5000/ROS", data=car_data)
-print("ROS respons:",r.text)
-r= requests.post("http://47.96.114.206:5000/client",data=client_data)
-print("client respons:",r.text)
 
-while True:
-    # ROS端连接请求
-    try:
-        r = requests.post("http://47.96.114.206:5000/ROS", data=car_data,timeout=3)
-    except exceptions.Timeout as e: # 连接超时，重连
-        print(str(e))
-    except exceptions.ConnectionError as e: # 网络断开，等待后重连
-        print(str(e))
-        time.sleep(3)
-    else:
-        print("ROS respons:",r.text)
-    
-    # 客户端连接请求    
-    try:    
-        r= requests.post("http://47.96.114.206:5000/client",data=client_data,timeout=3)
-    except exceptions.Timeout as e:
-        print(str(e))    
-    except exceptions.ConnectionError as e:
-        print(str(e))
-        time.sleep(3)
-    else:
-        print("client respons:",r.text)
-    time.sleep(1)
+# 生成MD5
+def genearteMD5(str):
+    # 创建md5对象
+    hl = hashlib.md5()
+    # Tips
+    # 此处必须声明encode
+    # 否则报错为：hl.update(str) Unicode-objects must be encoded before hashing
+    hl.update(str.encode(encoding='utf-8'))
+    return hl.hexdigest()
+
+
+# 输入账号密码和 登录or新建账号
+account = "17691053351"
+password = genearteMD5("0013")
+login_or_create = True
+# 传送的dict数据
+client = dict(account=account,
+              password=password,
+              login_or_create=login_or_create)
+# 与服务器通信，校验账号或者新建账号
+print(time.strftime('%Y-%m-%d %H:%M:%S'))
+try:
+    response = requests.post("http://127.0.0.1:5000/client/login",
+                             data=client,
+                             timeout=3)
+    print(response.text)
+except requests.exceptions.RequestException as e:  #
+    print(str(e))
+
+if response.text == "Login in success" or response.text == "Create account success":
+    # TODO: 先设置客户端的一些信息，默认已经设置好
+
+    # 这里可以新建一个线程用于循环发送数据
+    while True:
+        # 客户端连接请求
+        try:
+            # 循环发送客户端的数据信息，设置3s超时    
+            r= requests.post("http://127.0.0.1:5000/client",data=client_data,timeout=3)
+            # r就是接收到的数据。r.text指把收到的content转为str
+            print("client respons:",r.text)
+        except exceptions.Timeout as e:
+            print(str(e))
+        # 如果断线，等待3s后重连    
+        except exceptions.ConnectionError as e:
+            print(str(e))
+            time.sleep(3)
+        time.sleep(1)
