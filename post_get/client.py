@@ -37,22 +37,31 @@ car_data = {
     "lidar_status": False,
     "ibeo_status": False
 }
-r = requests.post("http://127.0.0.1:5000/ROS", data=car_data)
+r = requests.post("http://47.96.114.206:5000/ROS", data=car_data)
 print("ROS respons:",r.text)
-r= requests.post("http://127.0.0.1:5000/client",data=client_data)
+r= requests.post("http://47.96.114.206:5000/client",data=client_data)
 print("client respons:",r.text)
 
 while True:
+    # ROS端连接请求
     try:
-        r = requests.post("http://127.0.0.1:5000/ROS", data=car_data,timeout=0.1)
-    except exceptions.Timeout as e:
+        r = requests.post("http://47.96.114.206:5000/ROS", data=car_data,timeout=3)
+    except exceptions.Timeout as e: # 连接超时，重连
         print(str(e))
+    except exceptions.ConnectionError as e: # 网络断开，等待后重连
+        print(str(e))
+        time.sleep(3)
     else:
         print("ROS respons:",r.text)
+    
+    # 客户端连接请求    
     try:    
-        r= requests.post("http://127.0.0.1:5000/client",data=client_data,timeout=0.1)
+        r= requests.post("http://47.96.114.206:5000/client",data=client_data,timeout=3)
     except exceptions.Timeout as e:
         print(str(e))    
+    except exceptions.ConnectionError as e:
+        print(str(e))
+        time.sleep(3)
     else:
         print("client respons:",r.text)
     time.sleep(1)
