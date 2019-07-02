@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 # +-----------------------------------------+
-# | @File    :   server.py                |
+# | @File    :   server.py                  |
 # | @Time    :   2019/06/30 19:59:07        |
 # | @Author  :   Glory Huang                |
 # | @Contact :   gloryhry@stu.xjtu.edu.cn   |
@@ -12,6 +12,7 @@ from flask import Flask, request
 import ast
 import json
 import database
+import time
 
 app = Flask(__name__)
 
@@ -124,13 +125,13 @@ class client_login_data():
 
 @app.route('/')
 def hello_world():
-    car1=car_data({"car_id": 1, "current_position_x": 0, "current_position_y": 5, "routine": "[[0,0],[1,2]]", "velocity": 1.2, "gas": 0.2, "pressure_left_front": 0.2, "pressure_left_behind": 1.9, "pressure_right_front": 1.9, "pressure_right_behind": 4.6, "camera_status": False, "lidar_status": False, "ibeo_status": False})
-    return car1.car_data2json()
+    return app.send_static_file('github404.html')
 
 @app.route('/client', methods=['POST'])
 def client_post():
     client = client_data(request.form)
     print(client.person_id)
+    time.sleep(1)
     # TODO: 得到客户端需要返回的数据
     return client.client_data2json()  # 先返回输入值
 
