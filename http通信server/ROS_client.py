@@ -33,23 +33,33 @@ import json
 
 # 默认已经获取到uuid
 uuid = "04d5cc68-03f9-e411-a26a-480fcfdf611a"
-
+uuid=uuid.replace('-', '')
+print(uuid)
 # 定义传输数据格式，可能后续还要改变此格式
-data = {
-    "car_id": "",
-    "current_position_x": 0.0,
-    "current_position_y": 0.0,
-    "routine": "[[0,0],[1,1]]",
-    "velocity": 0,
-    "gas": 0,
-    "pressure_left_front": 0,
-    "pressure_right_front": 0,
-    "pressure_left_behind": 0,
-    "pressure_right_behind": 0,
-    "camera_status": True,
-    "lidar_status": True,
-    "ibeo_status": True
+data={
+    "car_id":"",
+    "current_position_x": 0,
+    "current_position_y": 0,
+    "current_velocity": 0,
+    "tire_pressure_left_front": 0.0,
+    "tire_pressure_right_front": 0.0,
+    "tire_pressure_left_behind": 0.0,
+    "tire_pressure_right_behind": 0.0,
+    "camera_status": False,
+    "lidar_status": False,
+    "ibeo_status": False,
+
+    "route":"",
+
+    "is_car_arrive_start": False,
+    "is_car_reach_target":False,
+    "is_car_start_to_start_point":False
 }
+# "car_status": "", ROS端不能上传car_status这个数据，服务器端会自动分配
+# "is_car_arrive_start" 意思是 车辆是否到达接客点
+# "is_car_reach_target" 意思是 车辆是否到达目的地
+# "is_car_start_to_start_point" 意思是 车辆是否开始启动
+
 # 写入数据
 data["car_id"] = uuid
 # print(data)
@@ -65,6 +75,22 @@ data["car_id"] = uuid
 # except requests.exceptions.RequestException as e:  #
 #     print(str(e))
 
+# 当车开机后向服务器发送本机idle的信息
+car={
+    "car_id":"",
+    "car_status":"idle"
+}
+car["car_id"]=uuid
+r = requests.post("http://127.0.0.1:5000/ROS",
+                          data=json.dumps(car),
+                          timeout=3)
+
+# # 调试用,忽略以下
+# r = requests.post("http://127.0.0.1:5000/ROS",
+#                           data=json.dumps(data),
+#                           timeout=3)
+# print("ROS respons:", r.text)
+
 while True:
     # ROS连接请求
     try:
@@ -77,15 +103,19 @@ while True:
         if r.text == "数据库中没有此车信息，请注册":
             print("ROS respons:", r.text)
             break
+        elif r.text == "Error occurs":
+            print("ROS respons:", r.text) # 服务器somewhere有bug出错了
+            break
+        if r.text != "当前没有订单":
+            # r.text指把收到的content转为str
+            print("ROS respons:", r.text)
+            # str转为dict的数据格式
+            # order_data = json.loads(r.text)
+            # 后面可以使用order_data数据，do what you want to do.
 
-        # r.text指把收到的content转为str
-        print("ROS respons:", r.text)
-        # str转为dict的数据格式
-        order_data = json.loads(r.text)
-        # 后面可以使用order_data数据，do what you want to do.
 
-        
-
+        else: # 如果当前没有订单
+            print("ROS respons:", r.text)
     except exceptions.Timeout as e:
         print(str(e))
     # 如果断线，等待3s后重连
