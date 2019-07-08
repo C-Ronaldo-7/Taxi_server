@@ -22,19 +22,23 @@ def connect_mysql(server_host, sql_user, sql_password, sql_database):
 
 
 # 创建数据表
-def build_mysql(db, table_name, sql):
+def build_mysql(table_name, sql):
+    db = connect_mysql("localhost", "glory", "0013", "taxi")
     # 使用 cursor() 方法创建一个游标对象 cursor
     cursor = db.cursor()
     if cursor.execute("show tables like '%s'; " % table_name):
         print("The table %s has be in this database! Do NOT create twice!" %
               table_name)
+        db.close()
         return False
     cursor.execute(sql)
+    db.close()
     return True
 
 
 # 插入dict格式数据进入表中(dict顺序需要与数据库中顺序一致)
-def write_sql(db, tabel, data):
+def write_sql(tabel, data):
+    db = connect_mysql("localhost", "glory", "0013", "taxi")
     cursor = db.cursor()
     keys = ""
     values = ""
@@ -59,12 +63,15 @@ def write_sql(db, tabel, data):
     except:
         # 如果发生错误则回滚
         db.rollback()
+        db.close()
         return False
+    db.close()
     return True
 
 
 # 根据某一主值，跟新table中其他变量
-def update_sql(db, id, id_value, table, data):
+def update_sql( id, id_value, table, data):
+    db = connect_mysql("localhost", "glory", "0013", "taxi")
     # 使用cursor()方法获取操作游标
     cursor = db.cursor()
     for items in data.keys():
@@ -95,12 +102,15 @@ def update_sql(db, id, id_value, table, data):
             except:
                 # 如果发生错误则回滚
                 db.rollback()
+                db.close()
                 return False
+    db.close()
     return True
 
 
 # 根据某一主值，读取数据表中信息,返回dict数据
-def read_sql(db, id, id_value, table):
+def read_sql(id, id_value, table):
+    db = connect_mysql("localhost", "glory", "0013", "taxi")
     # 使用cursor()方法获取操作游标
     cursor = db.cursor()
     # SQL 查询语句
@@ -150,11 +160,14 @@ def read_sql(db, id, id_value, table):
         # print(results_dict)
     except:
         print("Error: unable to fetch data in ", table)
+        db.close()
         return None
+    db.close()
     return results_dict
 
 # 根据某两个主值，查询数据表中信息，返回主值
-def find_sql(db,id1,id1_value,id2,id2_value,table,return_id):
+def find_sql(id1,id1_value,id2,id2_value,table,return_id):
+    db = connect_mysql("localhost", "glory", "0013", "taxi")
     # 使用cursor()方法获取操作游标
     cursor = db.cursor()
     # SQL 查询语句
@@ -175,7 +188,9 @@ def find_sql(db,id1,id1_value,id2,id2_value,table,return_id):
         results = cursor.fetchall()
     except:
         print("Error: unable to fetch data in ", table)
+        db.close()
         return "Error"
+    db.close()    
     return results
 
 # 使用预处理语句创建表
@@ -230,8 +245,6 @@ order_sql = """CREATE TABLE `order` (
     primary key(order_id))"""
 
 if __name__ == "__main__":
-    db = connect_mysql("localhost", "glory", "0013", "taxi")
-
     # # 创建数据表
     # build_mysql(db,"admin",admin_sql)
     # build_mysql(db, "car", car_sql)
@@ -278,5 +291,4 @@ if __name__ == "__main__":
     # car_id="04d5cc6803f9e411a26a480fcfdf611a"
     # json=read_sql(db,"car_id",car_id,"car")
     # print(json)
-
-    db.close()
+    pass

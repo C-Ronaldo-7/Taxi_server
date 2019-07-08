@@ -15,6 +15,9 @@ import uuid
 import subprocess
 import json
 
+# 设置服务器ip地址
+server_host="115.154.243.50"
+
 # 以下两种获取UUID的方法选其中一个
 
 # 方法一： 获取网卡的mac地址生成UUID，但是可能mac会变导致每次运行时UUID变化
@@ -35,7 +38,7 @@ import json
 uuid = "04d5cc68-03f9-e411-a26a-480fcfdf611a"
 uuid=uuid.replace('-', '')
 print(uuid)
-# 定义传输数据格式，可能后续还要改变此格式
+# 定义传输数据格式
 data={
     "car_id":"",
     "current_position_x": 0,
@@ -68,7 +71,7 @@ data["car_id"] = uuid
 # # 平时通信的时候可以不运行
 # try:
 #     # 与服务器通信时必须用json格式的数据
-#     response = requests.post("http://127.0.0.1:5000/ROS/register",
+#     response = requests.post("http://{server_host}:5000/ROS/register".format(server_host=server_host),
 #                              data=json.dumps(data),
 #                              timeout=3)
 #     print(response.text)
@@ -81,12 +84,12 @@ car={
     "car_status":"idle"
 }
 car["car_id"]=uuid
-r = requests.post("http://127.0.0.1:5000/ROS",
+r = requests.post("http://{server_host}:5000/ROS".format(server_host=server_host),
                           data=json.dumps(car),
                           timeout=3)
 
 # # 调试用,忽略以下
-# r = requests.post("http://127.0.0.1:5000/ROS",
+# r = requests.post("http://{server_host}:5000/ROS".format(server_host=server_host),
 #                           data=json.dumps(data),
 #                           timeout=3)
 # print("ROS respons:", r.text)
@@ -96,7 +99,7 @@ while True:
     try:
         # 循环发送ROS的数据信息，设置3s超时
         # 与服务器通信时必须用json格式的数据
-        r = requests.post("http://127.0.0.1:5000/ROS",
+        r = requests.post("http://{server_host}:5000/ROS".format(server_host=server_host),
                           data=json.dumps(data),
                           timeout=3)
         # r就是接收到的ORDER数据。
