@@ -165,7 +165,7 @@ def read_sql(id, id_value, table):
     db.close()
     return results_dict
 
-# 根据某两个主值，查询数据表中信息，返回主值
+# 根据某两个主值，查询数据表中信息，返回 主值
 def find_sql(id1,id1_value,id2,id2_value,table,return_id):
     db = connect_mysql("localhost", "glory", "0013", "taxi")
     # 使用cursor()方法获取操作游标

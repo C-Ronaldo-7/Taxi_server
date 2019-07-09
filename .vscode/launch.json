@@ -8,16 +8,16 @@
             "name": "Python: Flask (0.11.x or later)",
             "type": "python",
             "request": "launch",
-            // "program": "${file}",
-            // "console": "integratedTerminal",
+            "program": "${file}",
+            "console": "integratedTerminal",
 
-            "module": "flask",
-            "env": {
-                "FLASK_APP": "${workspaceFolder}/http通信server/server.py"    },
-            "args": [
-                "run",
-                "--no-debugger",
-                "--no-reload"    ]
+            // "module": "flask",
+            // "env": {
+            //     "FLASK_APP": "${workspaceFolder}/http通信server/server.py"    },
+            // "args": [
+            //     "run",
+            //     "--no-debugger",
+            //     "--no-reload"    ]
         },
     ]
 }

@@ -15,7 +15,7 @@ import hashlib
 import json
 
 # 设置服务器ip地址
-server_host="115.154.243.50"
+server_host="47.111.92.117"
 
 
 

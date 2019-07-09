@@ -15,15 +15,16 @@ import database
 import time
 import threading
 import createid
+import xinge
 
 app = Flask(__name__)
 
-
+# 404主页
 @app.route('/')
 def hello_world():
     return app.send_static_file('github404.html')
 
-
+# 客户端通信
 @app.route('/client', methods=['POST'])
 def client_post():
     recv = str(request.data, encoding="utf-8")  # 获取客户端post的数据
@@ -33,6 +34,21 @@ def client_post():
         database.update_sql("order_id", dict_data["order_id"], "order",
                             dict_data)
     order_data = database.read_sql("order_id", dict_data["order_id"], "order")
+    # TODO: 判断车辆是否到达接客点，若到达则给客户端推送到达信息 设置account为客户端的手机号
+    # push=xinge.XingeApp("a0381c28541e4","570812dd57c4d94451b1e36766db6697")
+    # if order_data["is_car_arrive_start"]==Ture and order_data["is_car_reach_target"]==False :
+    #     msg=xinge.MessageIOS()
+    #     msg.alert="json"
+    #     msg.expireTime = 3600
+    #     msg.custom={}
+    #     account = order_data["client_id"]
+    #     ret=push.PushSingleAccount(0,account,msg,1)
+    # elif order_data["is_car_reach_target"]==True:
+    #     msg=xinge.MessageIOS()
+    #     msg.alert="json"
+    #     account = order_data["client_id"]
+    #     ret=push.PushSingleAccount(0,account,msg,1)
+
     if order_data["order_status"] == "comp":  # 当乘客下车后，设置car_status为idle
         with car_lock:
             car_data = {}
@@ -56,7 +72,7 @@ def client_post():
     return json.dumps(data)
     # return json.dumps(order_data)
 
-
+# 客户端检查订单
 @app.route('/client/checkorder', methods=['POST'])
 def client_check():
     recv = str(request.data, encoding="utf-8")  # 获取客户端post的数据
@@ -77,7 +93,7 @@ def client_check():
     else:
         return "当前没有订单"
 
-
+# 客户端创建订单
 @app.route('/client/createorder', methods=['POST'])
 def client_create():
     recv = str(request.data, encoding="utf-8")  # 获取客户端post的数据
@@ -111,7 +127,7 @@ def client_create():
     order_data_read["order_end_time"] = str(order_data_read["order_end_time"])
     return json.dumps(order_data_read)
 
-
+# 客户端登录
 @app.route('/client/login', methods=['POST'])
 def client_login():
     recv = str(request.data, encoding="utf-8")  # 获取客户端post的数据
@@ -148,7 +164,7 @@ def client_login():
         # print(client.login_or_create+"?")
         return "Error occurs"
 
-
+# ROS端通信
 @app.route('/ROS', methods=['POST'])
 def ROS_post():
     recv = str(request.data, encoding="utf-8")  # 获取ROS客户端post的数据
@@ -207,7 +223,7 @@ def ROS_post():
     order["order_end_time"] = str(order["order_end_time"])
     return json.dumps(order)
 
-
+# ROS端注册
 @app.route('/ROS/register', methods=['POST'])
 def ROS_register():
     recv = str(request.data, encoding="utf-8")
@@ -243,3 +259,11 @@ order_lock = threading.Lock()  # 创建order表的锁
 car_lock = threading.Lock()
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5000, debug=False)
+
+    # # 信鸽推送test
+    # push=xinge.XingeApp("a0381c28541e4","570812dd57c4d94451b1e36766db6697")
+    # msg=xinge.MessageIOS()
+    # msg.alert="json"
+    # msg.expireTime = 3600
+    # msg.custom={}
+    # ret=push.PushSingleAccount(0,"17691053351",msg,2)
