@@ -16,7 +16,7 @@ import subprocess
 import json
 
 # 设置服务器ip地址
-server_host="115.154.243.50"
+server_host="47.111.92.117"
 
 # 以下两种获取UUID的方法选其中一个
 
@@ -35,7 +35,7 @@ server_host="115.154.243.50"
 # print(cmd)
 
 # 默认已经获取到uuid
-uuid = "04d5cc68-03f9-e411-a26a-480fcfdf611a"
+uuid = "11d5cc68-03f9-e411-a26a-480fcfdf611a"
 uuid=uuid.replace('-', '')
 print(uuid)
 # 定义传输数据格式
@@ -54,8 +54,8 @@ data={
 
     "route":"",
 
-    "is_car_arrive_start": False,
-    "is_car_reach_target":False,
+    "is_car_arrive_start": True,
+    "is_car_reach_target":True,
     "is_car_start_to_start_point":False
 }
 # "car_status": "", ROS端不能上传car_status这个数据，服务器端会自动分配
@@ -79,14 +79,14 @@ data["car_id"] = uuid
 #     print(str(e))
 
 # 当车开机后向服务器发送本机idle的信息
-car={
-    "car_id":"",
-    "car_status":"idle"
-}
-car["car_id"]=uuid
-r = requests.post("http://{server_host}:5000/ROS".format(server_host=server_host),
-                          data=json.dumps(car),
-                          timeout=3)
+# car={
+#     "car_id":"",
+#     "car_status":"idle"
+# }
+# car["car_id"]=uuid
+# r = requests.post("http://{server_host}:5000/ROS".format(server_host=server_host),
+#                           data=json.dumps(car),
+#                           timeout=3)
 
 # # 调试用,忽略以下
 # r = requests.post("http://{server_host}:5000/ROS".format(server_host=server_host),

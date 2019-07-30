@@ -23,7 +23,7 @@ def connect_mysql(server_host, sql_user, sql_password, sql_database):
 
 # 创建数据表
 def build_mysql(table_name, sql):
-    db = connect_mysql("localhost", "glory", "0013", "taxi")
+    db = connect_mysql("localhost", "glory", "0013", "newtaxi")
     # 使用 cursor() 方法创建一个游标对象 cursor
     cursor = db.cursor()
     if cursor.execute("show tables like '%s'; " % table_name):
@@ -38,7 +38,7 @@ def build_mysql(table_name, sql):
 
 # 插入dict格式数据进入表中(dict顺序需要与数据库中顺序一致)
 def write_sql(tabel, data):
-    db = connect_mysql("localhost", "glory", "0013", "taxi")
+    db = connect_mysql("localhost", "glory", "0013", "newtaxi")
     cursor = db.cursor()
     keys = ""
     values = ""
@@ -71,7 +71,7 @@ def write_sql(tabel, data):
 
 # 根据某一主值，跟新table中其他变量
 def update_sql( id, id_value, table, data):
-    db = connect_mysql("localhost", "glory", "0013", "taxi")
+    db = connect_mysql("localhost", "glory", "0013", "newtaxi")
     # 使用cursor()方法获取操作游标
     cursor = db.cursor()
     for items in data.keys():
@@ -110,7 +110,7 @@ def update_sql( id, id_value, table, data):
 
 # 根据某一主值，读取数据表中信息,返回dict数据
 def read_sql(id, id_value, table):
-    db = connect_mysql("localhost", "glory", "0013", "taxi")
+    db = connect_mysql("localhost", "glory", "0013", "newtaxi")
     # 使用cursor()方法获取操作游标
     cursor = db.cursor()
     # SQL 查询语句
@@ -123,7 +123,7 @@ def read_sql(id, id_value, table):
         sql = """SELECT * FROM `{table}` WHERE `{id}` = {id_value}""".format(
             table=table, id=id, id_value=id_value)
     sql_name = """select COLUMN_NAME,ORDINAL_POSITION from information_schema.COLUMNS where table_name = '{table}' and table_schema = '{database}';""".format(
-        table=table, database="taxi")
+        table=table, database="newtaxi")
     # print(sql)
     try:
         # 执行SQL语句
@@ -167,7 +167,7 @@ def read_sql(id, id_value, table):
 
 # 根据某两个主值，查询数据表中信息，返回 主值
 def find_sql(id1,id1_value,id2,id2_value,table,return_id):
-    db = connect_mysql("localhost", "glory", "0013", "taxi")
+    db = connect_mysql("localhost", "glory", "0013", "newtaxi")
     # 使用cursor()方法获取操作游标
     cursor = db.cursor()
     # SQL 查询语句
