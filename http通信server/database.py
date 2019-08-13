@@ -193,6 +193,43 @@ def find_sql(id1,id1_value,id2,id2_value,table,return_id):
     db.close()    
     return results
 
+def find_row(id,value,table):
+    db = connect_mysql("localhost", "glory", "0013", "newtaxi")
+    # 使用cursor()方法获取操作游标
+    cursor = db.cursor()
+    # SQL 查询语句
+    if isinstance(value, str)==True:
+        sql = 'select count({time}) from {table} where {time} <= (select {time} from `{table}` where `{id}` = "{value}")'.format(time='time', table=table, id=id, value=value)
+    else:
+        sql = 'select count({time}) from {table} where {time} <= (select {time} from `{table}` where `{id}` = {value})'.format(time='time', table=table, id=id, value=value)
+    try:
+        # 执行SQL语句
+        cursor.execute(sql)
+        results = cursor.fetchone()    
+    except:
+        print("There is no {id} in {table}".format(id=id,table=table))
+        db.close()
+        return "Error"   
+    db.close()
+    return results
+
+def count_row(id,table):
+    db = connect_mysql("localhost", "glory", "0013", "newtaxi")
+    # 使用cursor()方法获取操作游标
+    cursor = db.cursor()
+    # SQL 查询语句
+    sql='select count(`{id}`) from `{table}`'.format(id=id,table=table)
+    try:
+        # 执行SQL语句
+        cursor.execute(sql)
+        results = cursor.fetchone() 
+    except:
+        print("Error: can not get {table}'s count".format(table=table))
+        db.close()
+        retrun "error"
+    db.close()
+    return results
+
 # 使用预处理语句创建表
 # 管理账号
 admin_sql="""CREATE TABLE `admin`(

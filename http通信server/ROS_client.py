@@ -52,7 +52,7 @@ data={
     "lidar_status": False,
     "ibeo_status": False,
 
-    "route":"",
+    "route":'[[34.258036686857494, 108.65009318120921]]',
 
     "is_car_arrive_start": True,
     "is_car_reach_target":True,
@@ -78,10 +78,10 @@ data["car_id"] = uuid
 # except requests.exceptions.RequestException as e:  #
 #     print(str(e))
 
-# 当车开机后向服务器发送本机idle的信息
+# # 当车开机后向服务器发送本机idle的信息
 # car={
 #     "car_id":"",
-#     "car_status":"idle"
+#     "car_status":"proc"
 # }
 # car["car_id"]=uuid
 # r = requests.post("http://{server_host}:5000/ROS".format(server_host=server_host),
@@ -101,7 +101,7 @@ while True:
         # 与服务器通信时必须用json格式的数据
         r = requests.post("http://{server_host}:5000/ROS".format(server_host=server_host),
                           data=json.dumps(data),
-                          timeout=3)
+                          timeout=5)
         # r就是接收到的ORDER数据。
         if r.text == "数据库中没有此车信息，请注册":
             print("ROS respons:", r.text)
