@@ -36,10 +36,13 @@ phone_number = "17691053351"  # 手机号码
 password = "0013"
 password = genearteMD5(password)
 login_or_create = True
+is_client_login = False
+
 # 传送的dict数据
 client = dict(phone_number=phone_number,
               password=password,
-              login_or_create=login_or_create)
+              login_or_create=login_or_create,
+              is_client_login=is_client_login)
 print(type(client["login_or_create"]))
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 # post传输数据时，必须用json格式的数据
@@ -63,6 +66,17 @@ except requests.exceptions.RequestException as e:  #
 # 5. Create account success      注册账号成功，可以进行后续打车操作
 # 6. error occures               注册账号时出错，需要重新注册
 # 7. Error occurs                未知错误，可能是网络状况不行等情况
+
+# 退出登录当前账号
+'''
+try:
+    response = requests.post("http://{server_host}:5000/client/login".format(server_host=server_host),
+                             data=json_client,
+                             timeout=10)
+    print(response.text)
+except requests.exceptions.RequestException as e:
+    print(str(e))
+'''
 
 client_data = {
     "phone_number": "17691053351",

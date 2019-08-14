@@ -62,7 +62,7 @@ def client_post():
                                 order_data)
     order_data["order_creation_time"] = str(order_data["order_creation_time"])
     order_data["order_end_time"] = str(order_data["order_end_time"])
-    # 若需要传送回car的数据,则把car的dict和进order_data
+    # TODO: 若需要传送回car的数据,则把car的dict和进order_data
     data = {}
     car = database.read_sql("car_id", order_data["car_id"], "taxitest_car")
     for k, v in order_data.items():
@@ -78,11 +78,6 @@ def client_check():
     recv = str(request.data, encoding="utf-8")  # 获取客户端post的数据
     dict_data = json.loads(recv)
     # print(dict_data)
-    # 检查是否在排队，若在排队，则返回wait_client的信息。
-    wait_data=database.read_sql("phone_number",dict_data["phone_number"],"wait_client")
-    if wait_data != None:
-        wait_data.pop("creation_time")
-        return json.dumps(wait_data)
     # 查询是否有订单正在进行
     order_id = database.find_sql("phone_number", dict_data["phone_number"],
                                  "order_status", "proc", "taxitest_order", "order_id")
@@ -103,61 +98,11 @@ def client_check():
 def client_create():
     recv = str(request.data, encoding="utf-8")  # 获取客户端post的数据
     dict_data = json.loads(recv)
-    # 检查是否在排队列表中，
-    # 如果是，则判断排队中的位置，
-    # 若为第一位，则判断有没有车辆空闲出来
-    # 若不为第一位，返回当前排队的还有多少人
-    rank=database.find_row("phone_number",dict_data["phone_number"],"wait_client")
-    if rank != "Error":
-        if rank == 1:
-            car = database.read_sql("car_status", "idle", "taxitest_car")
-            if car == None:
-                return "当前有1人在排队"
-            else:
-                # 创建新的一个订单
-                order_data = {}
-                for item in dict_data.keys():
-                    order_data[item] = dict_data[item]
-                # 生成一个19位订单编号
-                order_data["order_id"] = createid.get_id(dict_data["phone_number"])
-                order_data["order_status"] = "proc"
-                order_data["car_id"] = car["car_id"]
-                # 更改车辆的状态为proc
-                car["car_status"] = "proc"
-                with car_lock:
-                    database.update_sql("car_id", car["car_id"], "taxitest_car", car)
-                order_data["order_creation_time"] = time.strftime("%Y-%m-%d %H:%M:%S",
-                                                                time.localtime())
-                # print(order_data)
-                # 写入order_data
-                with order_lock:
-                    database.write_sql("taxitest_order", order_data)
-                order_data_read = database.read_sql("order_id", order_data["order_id"],
-                                                    "taxitest_order")
-                order_data_read["order_creation_time"] = str(
-                    order_data_read["order_creation_time"])
-                order_data_read["order_end_time"] = str(order_data_read["order_end_time"])
-                return json.dumps(order_data_read)
-        elif rank >= 2:
-            return "当前有{rank}人在排队".format(rank=rank)
-    # 如果排队列表里没有人在排队，那么直接叫车
-    # 否则加入排队列表中
-    sum_wait=database.count_row("phone_number","wait_client")
-    if sum_wait =="error":
-        return "error"
-    elif sum_wait > 0:
-        wait_data={}
-        for item in dict_data.keys():
-            wait_data[item] = dict_data[item]
-        wait_data["creation_time"] = time.localtime()
-        database.write_sql("wait_client",wait_data)
-        return "当前有{wait}人在排队".format(sum_wait+1)
 
     # 创建新的一个订单
     order_data = {}
     car = database.read_sql("car_status", "idle", "taxitest_car")
     if car == None:  # 如果数据库中找不到空闲车辆
-        # TODO: 判断是否正在排队，若没有在排队则放入wait_client的表单中。
         return "当前没有空闲车辆"
     for item in dict_data.keys():
         order_data[item] = dict_data[item]
@@ -182,7 +127,7 @@ def client_create():
     order_data_read["order_end_time"] = str(order_data_read["order_end_time"])
     return json.dumps(order_data_read)
 
-# 客户端登录
+# 客户端登录(需要在进行注册操作时多发送一个is_client_login的标志位，默认为False)
 @app.route('/client/login', methods=['POST'])
 def client_login():
     recv = str(request.data, encoding="utf-8")  # 获取客户端post的数据
@@ -195,10 +140,18 @@ def client_login():
         # 查询数据库中有无此账号
         if dict_account == None:
             return "无此账户"
+        # 检查是否该账号已经在别的设备登录
+        elif dict_account["is_client_login"] == True:
+            return "此账号已在别的设备登录"
         # 检查数据库中账号密码是否正确
-        if dict_account["password"] == dict_data["password"]:
-            return "Login in success" 
-        else:
+        elif dict_account["password"] == dict_data["password"]:
+            # 登陆成功时将数据库中对应该账号的标志位is_client_login置为True
+            dict_account["is_client_login"] == True
+            with client_lock:   # 获取client锁
+                database.update_sql("phone_number", dict_account["phone_number"], 
+                                     "taxitest_client", dict_account)
+            return "Login in success"
+        elif dict_acount["password"]: != dict_data["password"]:
             return "账号或密码不正确"
     elif dict_data["login_or_create"] == False:
         # 检查数据库中是否有账户
@@ -218,6 +171,33 @@ def client_login():
     else:
         # print(client.login_or_create+"?")
         return "Error occurs"
+
+# 客户端退出登录
+@app.route('/client/logout', methods=['POST'])
+def client_logout():
+    recv = str(request.data, encoding="utf-8")  # 获取客户端post的数据
+    dict_data = json.loads(recv)
+
+    dict_account = database.read_sql("phone_number",
+                                     dict_data["phone_number"], "taxitest_client")
+    order_id = database.find_sql("phone_number", dict_data["phone_number"], "order_status",
+                                 "proc", "taxitest_order", "order_id")
+    # 检查该账号是否存在
+    if dict_account == None:
+        return "无此账户"
+    # 检查盖该账户是否处于登录状态
+    elif dict_account["is_client_login"] == False:
+        return "该账号并未登录"
+    # 检查该账户是否有订单正在进行
+    elif len(order_id) != 0:
+        return "当前有订单正在进行，无法退出登录"
+    # 退出登录，设置标志位is_client_login为False
+    else:
+        dict_account["is_client_login"] = False
+        with client_lock:  # 获取client锁
+            database.update_sql("phone_number", dict_account["phone_number"], 
+                                 "taxitest_client", dict_account)
+        return "当前账号已成功退出"
 
 # ROS端通信
 @app.route('/ROS', methods=['POST'])
@@ -316,6 +296,7 @@ def ROS_register():
 
 order_lock = threading.Lock()  # 创建order表的锁
 car_lock = threading.Lock()
+client_lock = threading.Lock()
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5000, debug=False)
 
