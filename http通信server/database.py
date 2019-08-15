@@ -34,7 +34,7 @@ def build_mysql(table_name, sql):
     cursor.execute(sql)
     db.close()
     return True
-
+# 这里是新修改的地方
 
 # 插入dict格式数据进入表中(dict顺序需要与数据库中顺序一致)
 def write_sql(tabel, data):
