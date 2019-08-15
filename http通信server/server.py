@@ -189,7 +189,7 @@ def client_create():
     order_data_read["order_end_time"] = str(order_data_read["order_end_time"])
     return json.dumps(order_data_read)
 
-# 客户端登录
+# 客户端登录(需要在进行注册操作时多发送一个is_client_login的标志位，默认为False)
 @app.route('/client/login', methods=['POST'])
 def client_login():
     recv = str(request.data, encoding="utf-8")  # 获取客户端post的数据
@@ -202,10 +202,18 @@ def client_login():
         # 查询数据库中有无此账号
         if dict_account == None:
             return "无此账户"
+        # 检查是否该账号已经在别的设备登录
+        elif dict_account["is_client_login"] == True:
+            return "此账号已在别的设备登录"
         # 检查数据库中账号密码是否正确
-        if dict_account["password"] == dict_data["password"]:
-            return "Login in success" 
-        else:
+        elif dict_account["password"] == dict_data["password"]:
+            # 登陆成功时将数据库中对应该账号的标志位is_client_login置为True
+            dict_account["is_client_login"] == True
+            with client_lock:   # 获取client锁
+                database.update_sql("phone_number", dict_account["phone_number"], 
+                                     "taxitest_client", dict_account)
+            return "Login in success"
+        elif dict_acount["password"]: != dict_data["password"]:
             return "账号或密码不正确"
     elif dict_data["login_or_create"] == False:
         # 检查数据库中是否有账户
@@ -225,6 +233,32 @@ def client_login():
     else:
         # print(client.login_or_create+"?")
         return "Error occurs"
+# 客户端退出登录
+@app.route('/client/logout', methods=['POST'])
+def client_logout():
+    recv = str(request.data, encoding="utf-8")  # 获取客户端post的数据
+    dict_data = json.loads(recv)
+
+    dict_account = database.read_sql("phone_number",
+                                     dict_data["phone_number"], "taxitest_client")
+    order_id = database.find_sql("phone_number", dict_data["phone_number"], "order_status",
+                                 "proc", "taxitest_order", "order_id")
+    # 检查该账号是否存在
+    if dict_account == None:
+        return "无此账户"
+    # 检查盖该账户是否处于登录状态
+    elif dict_account["is_client_login"] == False:
+        return "该账号并未登录"
+    # 检查该账户是否有订单正在进行
+    elif len(order_id) != 0:
+        return "当前有订单正在进行，无法退出登录"
+    # 退出登录，设置标志位is_client_login为False
+    else:
+        dict_account["is_client_login"] = False
+        with client_lock:  # 获取client锁
+            database.update_sql("phone_number", dict_account["phone_number"], 
+                                 "taxitest_client", dict_account)
+        return "当前账号已成功退出"
 
 # ROS端通信
 @app.route('/ROS', methods=['POST'])
