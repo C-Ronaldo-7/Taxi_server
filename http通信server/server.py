@@ -103,6 +103,13 @@ def client_check():
 def client_create():
     recv = str(request.data, encoding="utf-8")  # 获取客户端post的数据
     dict_data = json.loads(recv)
+    # 判断是否要取消排队等候
+    if dict_data.has_key('queue_cancel'):
+        if dict_data['queue_cancel']==True:
+            if database.delete_line("phone_number",dict_data["phone_number"],"wait_client")：
+                return "cancel queue success"
+            else:
+                return "cancel queue fail"
     # 检查是否在排队列表中，
     # 如果是，则判断排队中的位置，
     # 若为第一位，则判断有没有车辆空闲出来
@@ -149,7 +156,7 @@ def client_create():
         wait_data={}
         for item in dict_data.keys():
             wait_data[item] = dict_data[item]
-        wait_data["creation_time"] = time.localtime()
+        wait_data["creation_time"] = time.time()
         database.write_sql("wait_client",wait_data)
         return "当前有{wait}人在排队".format(sum_wait+1)
 

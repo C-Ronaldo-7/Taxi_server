@@ -193,6 +193,7 @@ def find_sql(id1,id1_value,id2,id2_value,table,return_id):
     db.close()    
     return results
 
+# 查找数据是第几行
 def find_row(id,value,table):
     db = connect_mysql("localhost", "glory", "0013", "newtaxi")
     # 使用cursor()方法获取操作游标
@@ -213,6 +214,7 @@ def find_row(id,value,table):
     db.close()
     return results
 
+# 查看一共有多少行数据
 def count_row(id,table):
     db = connect_mysql("localhost", "glory", "0013", "newtaxi")
     # 使用cursor()方法获取操作游标
@@ -226,9 +228,28 @@ def count_row(id,table):
     except:
         print("Error: can not get {table}'s count".format(table=table))
         db.close()
-        retrun "error"
+        return "error"
     db.close()
     return results
+
+# 删除一行数据
+def delete_line(id,value,table):
+    db = connect_mysql("localhost", "glory", "0013", "newtaxi")
+    # 使用cursor()方法获取操作游标
+    cursor = db.cursor()
+    # SQL 查询语句
+    if isinstance(value, str)==True:
+        sql='delete from `{table}` where `{id}`="{value}"'.format(table=table,id=id,value=value)
+    else:
+        sql='delete from `{table}` where `{id}`={value}'.format(table=table,id=id,value=value)
+    try:
+        # 执行SQL语句
+        cursor.execute(sql)
+    except:
+        print("Error: delete fail. on table {table}".format(table=table))
+        db.close()
+        return False
+    return True
 
 # 使用预处理语句创建表
 # 管理账号
