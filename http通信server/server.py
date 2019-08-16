@@ -202,17 +202,18 @@ def client_login():
         # 查询数据库中有无此账号
         if dict_account == None:
             return "无此账户"
-        # 检查是否该账号已经在别的设备登录
-        elif dict_account["is_client_login"] == True:
-            return "此账号已在别的设备登录"
         # 检查数据库中账号密码是否正确
         elif dict_account["password"] == dict_data["password"]:
-            # 登陆成功时将数据库中对应该账号的标志位is_client_login置为True
-            dict_account["is_client_login"] == True
-            with client_lock:   # 获取client锁
-                database.update_sql("phone_number", dict_account["phone_number"], 
-                                     "taxitest_client", dict_account)
-            return "Login in success"
+        	# 检查是否该账户已在别的设备登录
+        	if dict_account["is_client_login"] == True:
+        		return "此账号已在别的设备登录"
+        	# 登陆成功时将数据库中对应该账号的标志位is_client_login置为True
+        	else：
+                dict_account["is_client_login"] = True
+                with client_lock:   # 获取client锁
+                    database.update_sql("phone_number", dict_account["phone_number"], 
+                                        "taxitest_client", dict_account)
+                return "Login in success"
         elif dict_account["password"] != dict_data["password"]:
             return "账号或密码不正确"
     elif dict_data["login_or_create"] == False:
