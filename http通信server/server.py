@@ -213,7 +213,7 @@ def client_login():
                 database.update_sql("phone_number", dict_account["phone_number"], 
                                      "taxitest_client", dict_account)
             return "Login in success"
-        elif dict_acount["password"]: != dict_data["password"]:
+        elif dict_account["password"] != dict_data["password"]:
             return "账号或密码不正确"
     elif dict_data["login_or_create"] == False:
         # 检查数据库中是否有账户
