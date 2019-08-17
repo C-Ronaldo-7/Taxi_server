@@ -189,7 +189,7 @@ def client_create():
     order_data_read["order_end_time"] = str(order_data_read["order_end_time"])
     return json.dumps(order_data_read)
 
-# 客户端登录(需要在进行注册操作时多发送一个is_client_login的标志位，默认为False)
+# 客户端登录和注册(需要在进行登录注册操作时多发送一个is_client_login的标志位，默认为False)
 @app.route('/client/login', methods=['POST'])
 def client_login():
     recv = str(request.data, encoding="utf-8")  # 获取客户端post的数据
@@ -226,14 +226,16 @@ def client_login():
         else:
             # print(client.data2dist())
             # print(dict_account)
+            dict_data["is_client_login"] = True
             a = database.write_sql("taxitest_client", dict_data)  # 写client进入数据库
             if a == True:
-                return "Create account success"
+                return "注册完成并登陆成功"
             else:
                 return "error occures"
     else:
         # print(client.login_or_create+"?")
         return "Error occurs"
+
 # 客户端退出登录
 @app.route('/client/logout', methods=['POST'])
 def client_logout():
