@@ -36,6 +36,7 @@ phone_number = "17691053351"  # 手机号码
 password = "0013"
 password = genearteMD5(password)
 login_or_create = True
+is_client_login = False
 # 传送的dict数据
 client = dict(phone_number=phone_number,
               password=password,
@@ -55,14 +56,34 @@ try:
 except requests.exceptions.RequestException as e:  #
     print(str(e))
 
-# response.text 有以下几种情况
-# 1. Login in success           账号登录成功，可以进行后续打车操作
-# 2. 无此账户                    数据库中没有此账户，需要进行注册操作
-# 3. 账号或密码不正确              账号或密码输入错误，需要重新输入
-# 4. 已存在此账号，请登录           注册时发现账号已存在，需要直接登录
-# 5. Create account success      注册账号成功，可以进行后续打车操作
-# 6. error occures               注册账号时出错，需要重新注册
-# 7. Error occurs                未知错误，可能是网络状况不行等情况
+
+# 与服务器通信，进行退出登录操作
+'''
+try:
+    response = requests.post("http://{server_host}:5000/client/logout".format(server_host=server_host),
+                             data=json_client,
+                             timeout=10)
+    print(response.text)
+except requests.exceptions.RequestException as e:  #
+    print(str(e))
+'''
+
+
+# 注册登录操作时的response.text 有以下几种情况
+# 1. "Login in success"           账号登录成功，可以进行后续打车操作
+# 2. "无此账户"                    数据库中没有此账户，需要进行注册操作
+# 3. "账号或密码不正确"             账号或密码输入错误，需要重新输入
+# 4. "此账号已在别的设备登录"        登录时此账号已经在别的设备上登录
+# 5. "已存在此账号，请登录"          注册时发现账号已存在，需要直接登录
+# 6. "注册完成并登陆成功"            注册账号成功并直接登录，可以进行后续打车操作
+# 7. "error occures"               注册账号时出错，需要重新注册
+# 8. "Error occurs"                未知错误，可能是网络状况不行等情况
+
+# 退出登录时的response.text 有以下几种情况
+# 1. "无此账户"                              数据库中没有此账户，无法退出登录
+# 2. "该账号并未登录"                         该账号并没有登录无法退出
+# 3. "当前有订单正在进行，无法退出登录"         当前账号有订单正在进行，无法退出登录
+# 4. "当前账号已成功退出"                      退出操作成功执行
 
 client_data = {
     "phone_number": "17691053351",
