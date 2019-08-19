@@ -208,12 +208,12 @@ def client_login():
         	if dict_account["is_client_login"] == True:
         		return "此账号已在别的设备登录"
         	# 登陆成功时将数据库中对应该账号的标志位is_client_login置为True
-        	else：
+        	else:
                 dict_account["is_client_login"] = True
                 with client_lock:   # 获取client锁
                     database.update_sql("phone_number", dict_account["phone_number"], 
                                         "taxitest_client", dict_account)
-                return "Login in success"
+                return json.dumps(dict_account) # 账号登陆成功，返回账号信息
         elif dict_account["password"] != dict_data["password"]:
             return "账号或密码不正确"
     elif dict_data["login_or_create"] == False:
@@ -224,14 +224,28 @@ def client_login():
         if dict_account != None:
             return "已存在此账号，请登录"
         else:
-            # print(client.data2dist())
-            # print(dict_account)
-            dict_data["is_client_login"] = True
-            a = database.write_sql("taxitest_client", dict_data)  # 写client进入数据库
-            if a == True:
-                return "注册完成并登陆成功"
-            else:
-                return "error occures"
+        	if len(dict_data["username"]) == 0:
+        		return "用户名不能为空"
+        	else:
+        		flag = True
+        		for s in dict_data["username"]:
+        			if (s >= u'\u4e00' and s<=u'\u9fff') or ((s >= u'\u0041' and s <= u'\u005a')
+			        	or (s >= u'\u0061' and s <= u'\u007a')) or s.isdigit():
+			    		flag = True
+					else:
+						flag = False
+						break
+				if flag == True:
+					dict_data["is_client_login"] = True
+            		a = database.write_sql("taxitest_client", dict_data)  # 写client进入数据库
+            		if a == True:
+            			dict_account = database.read_sql("phone_number",
+                                                         dict_data["phone_number"], "taxitest_client")
+            			return json.dumps(dict_account) # 账号注册并登陆成功，返回账号信息
+            		else:
+                		return "error occures"
+                else:
+                	return "用户名输入错误，请重新输入"           
     else:
         # print(client.login_or_create+"?")
         return "Error occurs"
