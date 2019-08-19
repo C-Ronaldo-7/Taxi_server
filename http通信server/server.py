@@ -227,25 +227,25 @@ def client_login():
         	if len(dict_data["username"]) == 0:
         		return "用户名不能为空"
         	else:
-        		flag = True
-        		for s in dict_data["username"]:
-        			if (s >= u'\u4e00' and s<=u'\u9fff') or ((s >= u'\u0041' and s <= u'\u005a')
-			        	or (s >= u'\u0061' and s <= u'\u007a')) or s.isdigit():
-			    		flag = True
-					else:
-						flag = False
-						break
-				if flag == True:
-					dict_data["is_client_login"] = True
-            		a = database.write_sql("taxitest_client", dict_data)  # 写client进入数据库
-            		if a == True:
-            			dict_account = database.read_sql("phone_number",
+                flag = True
+                for s in dict_data["username"]:
+                    if (s >= u'\u4e00' and s<=u'\u9fff') or ((s >= u'\u0041' and s <= u'\u005a')
+                        or (s >= u'\u0061' and s <= u'\u007a')) or s.isdigit():
+			    	    flag = True
+				    else:
+				        flag = False
+				        break
+                if flag == True:
+                    dict_data["is_client_login"] = True
+                    a = database.write_sql("taxitest_client", dict_data)  # 写client进入数据库
+                    if a == True:
+                        dict_account = database.read_sql("phone_number",
                                                          dict_data["phone_number"], "taxitest_client")
-            			return json.dumps(dict_account) # 账号注册并登陆成功，返回账号信息
-            		else:
-                		return "error occures"
+                        return json.dumps(dict_account) # 账号注册并登陆成功，返回账号信息
+                    else:
+                        return "error occures"
                 else:
-                	return "用户名输入错误，请重新输入"           
+                    return "用户名输入错误，请重新输入"           
     else:
         # print(client.login_or_create+"?")
         return "Error occurs"
